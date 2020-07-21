@@ -101,11 +101,14 @@ If ($NextProgram -eq "Audacity") {
   If ($ProgramArray -contains "reader") {
   Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
   Start-Process -FilePath ReaderInstaller.exe /sAll
+  Remove-Item ReaderInstaller.exe
   $ProgramArray.Remove("reader")
   }
   If ($ProgramArray -contains "CCleaner") {
   Invoke-WebRequest https://download.ccleaner.com/ccsetup568.exe -OutFile ccsetup568.exe
   Start-Process -FilePath ccsetup568.exe /S
+  Remove-Item ccsetup568.exe
+
   $ProgramArray.Remove("CCleaner")
   }
   If($ProgramArray.Count > 0){
@@ -119,6 +122,9 @@ If ($NextProgram -eq "Audacity") {
   $URL = "https://ninite.com/" + $URL + "/ninite.exe"
   #Write-Host $URL
   Invoke-WebRequest $URL -OutFile Ninite.exe
+  Start-Process -FilePath Ninite.exe
+  Remove-Item Ninite.exe
+
   } 
   ElseIf ($ProgramArray.Count = 0){
   Write-Host "Please enter at least one program"
