@@ -5,6 +5,7 @@ $GetInfo = {
 $NextProgram = Read-Host -Prompt 'Input a program name that you want to install'
 
 
+
 If ($NextProgram -eq "Audacity") {
 
   'Audacity will be added'
@@ -35,6 +36,11 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Add('foxit') > $null
   &$GetInfo
 
+  } ElseIf ($NextProgram -eq "Greenshot") {
+  
+  'Greenshot will be added'
+  $ProgramArray.Add('greenshot') > $null
+  &$GetInfo
   } ElseIf ($NextProgram -eq "Malwarebytes") {
   
   'Malwarebytes will be added'
@@ -47,45 +53,76 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Add('notepadplusplus') > $null
   &$GetInfo
 
+  } ElseIf ($NextProgram -eq "Reader") {
+  
+  'Adobe Reader will be added'
+  $ProgramArray.Add('reader') > $null
+  &$GetInfo
+
   } ElseIf ($NextProgram -eq "VLC") {
   
   'VLC will be added'
   $ProgramArray.Add('vlc') > $null
   &$GetInfo
 
-  }
- ElseIf ($NextProgram -eq "Zoom") {
+  } ElseIf ($NextProgram -eq "Zoom") {
   
   'Zoom will be added'
   $ProgramArray.Add('zoom') > $null
   &$GetInfo
 
-  }  ElseIf ($NextProgram -eq "reset") {
+  } ElseIf ($NextProgram -eq "reset") {
   
   'Your selections will be reset'
   $ProgramArray = @()
   &$GetInfo
 
+  } ElseIf ($NextProgram -eq "list") {
+  
+  $ProgramArray
+  &$GetInfo
+
   } ElseIf ($NextProgram -eq "all") {
   
   'You will download all listed programs'
-  Invoke-WebRequest https://ninite.com/audacity-chrome-firefox-foxit-malwarebytes-notepadplusplus-vlc-zoom/
+  Invoke-WebRequest https://ninite.com/audacity-chrome-firefox-foxit-greenshot-malwarebytes-notepadplusplus-vlc-zoom/ -OutFile Ninite.exe
+  Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
+  Invoke-WebRequest https://download.ccleaner.com/ccsetup568.exe -OutFile ccsetup568.exe
+  Start-Process -FilePath Ninite.exe
+  Start-Process -FilePath ccsetup568.exe /S
+  Start-Process -FilePath ReaderInstaller.exe /sAll
+
   &$GetInfo
 
-  }  ElseIf ($NextProgram -eq "done") {
+  } ElseIf ($NextProgram -eq "done") {
   
   'Please wait while we install your selections'
-  foreach ($element in $ProgramArray) 
-  {
+  
+  If ($ProgramArray -contains "reader") {
+  Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
+  Start-Process -FilePath ReaderInstaller.exe /sAll
+  $ProgramArray.Remove("reader")
+  }
+  If ($ProgramArray -contains "CCleaner") {
+  Invoke-WebRequest https://download.ccleaner.com/ccsetup568.exe -OutFile ccsetup568.exe
+  Start-Process -FilePath ccsetup568.exe /S
+  $ProgramArray.Remove("CCleaner")
+  }
+  If($ProgramArray.Count > 0){
+  $ProgramArray.Sort()
+  foreach ($element in $ProgramArray) {
   $URL += $element + "-"
-  Write-Host $URL
+  #Write-Host $URL
   }
   $URL = $URL.Substring(0,$URL.Length-1)
-  Write-Host $URL
+  #Write-Host $URL
   $URL = "https://ninite.com/" + $URL + "/ninite.exe"
-  Write-Host $URL
+  #Write-Host $URL
   Invoke-WebRequest $URL -OutFile Ninite.exe
-
+  } 
+  ElseIf ($ProgramArray.Count = 0){
+  Write-Host "Please enter at least one program"
+  &$GetInfo
   } Else {
 
   'Please use a valid response'
@@ -93,4 +130,7 @@ If ($NextProgram -eq "Audacity") {
 
 }
 }
+}
+Write-Host 'Your options are: Audacity, CCleaner, Chrome, Firefox, Foxit, Greenshot, Malwarebytes, Notepad++, Reader, VLC, Zoom' -ForegroundColor green -BackgroundColor black
+Write-Host 'You can use "all" to select all listed options, "reset" to reset your selections, and "done" to finalize everything'-ForegroundColor green -BackgroundColor black
 &$GetInfo
