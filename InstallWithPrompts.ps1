@@ -1,10 +1,28 @@
 $ProgramArray = New-Object System.Collections.ArrayList
 $URL = "https://ninite.com/"
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function CheckAndDelete($file){
+    if (Test-Path $file -PathType leaf) {
+    Remove-Item $file
+    }
+}
+function stopStartup($file){
+  if($File -eq "CCleaner"){
+  Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run -Name 'CCleaner Smart Cleaning' -Value ([byte[]](0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00))
+  Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run -Name CCleaner -Value ([byte[]](0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00))
+  Write-Host "CCleaner autostartup has been disabled"
+  }
+}
+
+function manualAdd($filename){
+$filename = Read-Host -Prompt 'Input your program with URL-friendly, lowercase text'
+return '' + $filename
+}
+
 $GetInfo = {
 $NextProgram = Read-Host -Prompt 'Input a program name that you want to install'
-
-
 
 If ($NextProgram -eq "Audacity") {
 
@@ -82,6 +100,23 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray
   &$GetInfo
 
+  } ElseIf ($NextProgram -eq "add") {
+  #$ProgramArray.Add('' + manualAdd($filename)) > $null
+  &$GetInfo
+
+  }ElseIf ($NextProgram -eq "delete") {
+  
+  CheckAndDelete("Ninite.exe")
+  CheckAndDelete("ccsetup568.exe")
+  CheckAndDelete("ReaderInstaller.exe")
+  Write-Host 'Files deleted'
+  &$GetInfo
+
+  } ElseIf ($NextProgram -eq "more") {
+  
+  Write-Host '"list" lists everything in the ArrayList. "add" allows for manual addition of other Ninite-provided programs. "'-ForegroundColor green -BackgroundColor black
+  &$GetInfo
+
   } ElseIf ($NextProgram -eq "all") {
   
   'You will download all listed programs'
@@ -90,7 +125,7 @@ If ($NextProgram -eq "Audacity") {
   Invoke-WebRequest https://download.ccleaner.com/ccsetup568.exe -OutFile ccsetup568.exe
   Start-Process -FilePath Ninite.exe
   Start-Process -FilePath ccsetup568.exe /S
-  Start-Process -FilePath ReaderInstaller.exe /sAll
+  cmd ReaderInstaller.exe /sAll
 
   &$GetInfo
 
@@ -100,33 +135,30 @@ If ($NextProgram -eq "Audacity") {
   
   If ($ProgramArray -contains "reader") {
   Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
-  Start-Process -FilePath ReaderInstaller.exe /sAll
-  Remove-Item ReaderInstaller.exe
+  cmd ReaderInstaller.exe /sAll
   $ProgramArray.Remove("reader")
   }
   If ($ProgramArray -contains "CCleaner") {
   Invoke-WebRequest https://download.ccleaner.com/ccsetup568.exe -OutFile ccsetup568.exe
   Start-Process -FilePath ccsetup568.exe /S
-  Remove-Item ccsetup568.exe
-
   $ProgramArray.Remove("CCleaner")
   }
-  If($ProgramArray.Count > 0){
+  If($ProgramArray.Count -gt 0){
   $ProgramArray.Sort()
   foreach ($element in $ProgramArray) {
   $URL += $element + "-"
   #Write-Host $URL
   }
-  $URL = $URL.Substring(0,$URL.Length-1)
+  $URL = $URL.Substring(0,$URL.Length-1)  
   #Write-Host $URL
   $URL = "https://ninite.com/" + $URL + "/ninite.exe"
   #Write-Host $URL
   Invoke-WebRequest $URL -OutFile Ninite.exe
   Start-Process -FilePath Ninite.exe
-  Remove-Item Ninite.exe
+  
 
   } 
-  ElseIf ($ProgramArray.Count = 0){
+  ElseIf ($ProgramArray.Count -eq 0){
   Write-Host "Please enter at least one program"
   &$GetInfo
   } Else {
@@ -139,4 +171,6 @@ If ($NextProgram -eq "Audacity") {
 }
 Write-Host 'Your options are: Audacity, CCleaner, Chrome, Firefox, Foxit, Greenshot, Malwarebytes, Notepad++, Reader, VLC, Zoom' -ForegroundColor green -BackgroundColor black
 Write-Host 'You can use "all" to select all listed options, "reset" to reset your selections, and "done" to finalize everything'-ForegroundColor green -BackgroundColor black
+Write-Host '"delete" will remove all setup files. Use "more" for additional commands'-ForegroundColor green -BackgroundColor black
 &$GetInfo
+
