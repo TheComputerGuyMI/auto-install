@@ -59,6 +59,7 @@ If ($NextProgram -eq "Audacity") {
   'Greenshot will be added'
   $ProgramArray.Add('greenshot') > $null
   &$GetInfo
+
   } ElseIf ($NextProgram -eq "Malwarebytes") {
   
   'Malwarebytes will be added'
@@ -98,7 +99,7 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Add('reader') > $null
   &$GetInfo
 
-  }ElseIf ($NextProgram -eq "reset") {
+  } ElseIf ($NextProgram -eq "reset") {
   
   'Your selections will be reset'
   $ProgramArray = @()
@@ -114,7 +115,7 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Add($filename) > $null
   &$GetInfo
 
-  }ElseIf ($NextProgram -eq "delete") {
+  } ElseIf ($NextProgram -eq "delete") {
   
   CheckAndDelete("Ninite.exe")
   CheckAndDelete("ccsetup569.exe")
@@ -125,6 +126,7 @@ If ($NextProgram -eq "Audacity") {
   } ElseIf ($NextProgram -eq "more") {
   
   Write-Host '"list" lists everything in the ArrayList. "add" allows for manual addition of other Ninite-provided programs. "startup" disables autobooting of programs.'-ForegroundColor green -BackgroundColor black
+  Write-Host '"default" will install CCleaner, Chrome, Malwarebytes, and Reader'-ForegroundColor green -BackgroundColor black
   &$GetInfo
 
   } ElseIf ($NextProgram -eq "startup") {
@@ -171,7 +173,7 @@ If ($NextProgram -eq "Audacity") {
   #Write-Host $URL
   Invoke-WebRequest $URL -OutFile Ninite.exe
   Start-Process -FilePath Ninite.exe
-
+  Write-Host 'Be sure to use "delete" to remove your setup files!' 
   } 
   ElseIf ($ProgramArray.Count -eq 0){
   Write-Host "Please enter at least one program"
