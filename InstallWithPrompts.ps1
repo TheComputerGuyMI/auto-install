@@ -24,73 +24,97 @@ return $filename
 $GetInfo = {
 $NextProgram = Read-Host -Prompt 'Input a program name that you want to install'
 
-If ($NextProgram -eq "Audacity") {
+switch ($NextProgram) {
+
+ 'Audacity' {
 
   'Audacity will be added'
   $ProgramArray.Add('audacity') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Chrome") {
+  } 
+
+  'Chrome' {
 
   'Chrome will be added'
   $ProgramArray.Add('chrome') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "CCleaner") {
+  }
+
+  'CCleaner' {
   
   'CCleaner will be added'
   $ProgramArray.Add('CCleaner') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Firefox") {
+  }
+
+  'Firefox' {
   
   'Firefox will be added'
   $ProgramArray.Add('firefox') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Foxit") {
+  } 
+
+  'Foxit' {
   
   'Foxit will be added'
   $ProgramArray.Add('foxit') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Greenshot") {
+  }
+
+  'Greenshot' {
   
   'Greenshot will be added'
   $ProgramArray.Add('greenshot') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Malwarebytes") {
-  
+  } 
+
+  'Malwarebytes' {
+
   'Malwarebytes will be added'
   $ProgramArray.Add('malwarebytes') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Notepad++") {
+  } 
+
+  'Notepad++' {
   
   'Notepad++ will be added'
   $ProgramArray.Add('notepadplusplus') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Reader") {
+  }
+
+  'Reader' {
   
   'Adobe Reader will be added'
   $ProgramArray.Add('reader') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "VLC") {
+  }
+
+  'VLC' {
   
   'VLC will be added'
   $ProgramArray.Add('vlc') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "Zoom") {
+  }
+
+  'Zoom' {
   
   'Zoom will be added'
   $ProgramArray.Add('zoom') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "default") {
+  } 
+
+  'default' {
   
   'CCleaner, Chrome, Malwarebytes, and Reader will be added'
   $ProgramArray.Add('CCleaner') > $null
@@ -99,23 +123,31 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Add('reader') > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "reset") {
+  }
+
+  'reset' {
   
   'Your selections will be reset'
   $ProgramArray = @()
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "list") {
+  }
+
+  'list' {
   
   $ProgramArray
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "add") {
+  } 
+
+  'add' {
   $filename = manualAdd($filename)
   $ProgramArray.Add($filename) > $null
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "delete") {
+  } 
+
+  'delete' {
   
   CheckAndDelete("Ninite.exe")
   CheckAndDelete("ccsetup569.exe")
@@ -123,19 +155,25 @@ If ($NextProgram -eq "Audacity") {
   Write-Host 'Files deleted'
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "more") {
+  } 
+
+  'more' {
   
   Write-Host '"list" lists everything in the ArrayList. "add" allows for manual addition of other Ninite-provided programs. "startup" disables autobooting of programs.'-ForegroundColor green -BackgroundColor black
   Write-Host '"default" will install CCleaner, Chrome, Malwarebytes, and Reader'-ForegroundColor green -BackgroundColor black
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "startup") {
+  } 
+
+  'startup' {
   
   stopStartup("CCleaner")
   'CCleaner now will not start automatically'
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "all") {
+  }
+
+  'all' {
   
   'You will download all listed programs'
   Invoke-WebRequest https://ninite.com/audacity-chrome-firefox-foxit-greenshot-malwarebytes-notepadplusplus-vlc-zoom/ -OutFile Ninite.exe
@@ -147,17 +185,19 @@ If ($NextProgram -eq "Audacity") {
 
   &$GetInfo
 
-  } ElseIf ($NextProgram -eq "done") {
+  } 
+
+  'done' {
   
   'Please wait while we install your selections'
   
   If ($ProgramArray -contains "reader") {
-  Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
+  Start-BitsTransfer http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe, ReaderInstaller.exe
   cmd ReaderInstaller.exe /sAll
   $ProgramArray.Remove("reader")
   }
   If ($ProgramArray -contains "CCleaner") {
-  Invoke-WebRequest https://download.ccleaner.com/ccsetup569.exe -OutFile ccsetup569.exe
+  Start-BitsTransfer https://download.ccleaner.com/ccsetup569.exe, ccsetup569.exe
   Start-Process -FilePath ccsetup569.exe /S
   $ProgramArray.Remove("CCleaner")
   }
@@ -165,20 +205,21 @@ If ($NextProgram -eq "Audacity") {
   $ProgramArray.Sort()
   foreach ($element in $ProgramArray) {
   $URL += $element + "-"
-  #Write-Host $URL
   }
   $URL = $URL.Substring(0,$URL.Length-1)  
-  #Write-Host $URL
   $URL = "https://ninite.com/" + $URL + "/ninite.exe"
-  #Write-Host $URL
-  Invoke-WebRequest $URL -OutFile Ninite.exe
+  Start-BitsTransfer $URL, Ninite.exe
   Start-Process -FilePath Ninite.exe
   Write-Host 'Be sure to use "delete" to remove your setup files!' 
   } 
   ElseIf ($ProgramArray.Count -eq 0){
   Write-Host "Please enter at least one program"
   &$GetInfo
-  } Else {
+  } 
+ 
+} 
+
+Else {
 
   'Please use a valid response'
   &$GetInfo
