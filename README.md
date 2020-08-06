@@ -4,7 +4,7 @@
 
 This is a project attempting to automate the setup of new computers for clients. 
 
-*UPDATE: GUI-Installer now is available in both .exe and .ps1 formats! They both come bundled when downloading the most recent release."
+*UPDATE: GUI-Installer now is available in both .exe and .ps1 formats! They both come bundled when downloading the most recent release.*
 
 GUI-Installer will provide the user with some options for what they want to download to the new computer. 
 
