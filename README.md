@@ -6,6 +6,8 @@ This is a project attempting to automate the setup of new computers for clients.
 
 Currently, AllowScripts.exe must be run first to allow the PowerShell scripts to run successfully.
 
+* GUI-Installer.ps1 *may* not need AllowScripts.exe to be run anymore, but this will need more testing.
+
 *UPDATE: It's no longer recommended to use InstallWithPrompts.ps1 with the advent of GUI-Installer.ps1*
 
 GUI-Installer will provide the user with some options for what they want to download to the new computer. 
@@ -23,6 +25,8 @@ It comes with the following features:
 - The "Stop Startup" button is there to stop certain programs from executing on computer startup. CCleaner is the only program right now that needs to be changed from its default, but the framework is there for any other potential programs.
 
 - The "Delete Setup Files" button will delete any remaining setup files after the installation is complete.
+
+- A "Dev Mode" that allows for manual addition/removal of programs, viewing of any of these additions, and even a mini command-line to run PS commands.
 
 
 Current options are:
