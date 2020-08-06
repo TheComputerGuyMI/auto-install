@@ -1,7 +1,9 @@
-#Set-ExecutionPolicy Unrestricted -Scope Process
-[System.Threading.Thread]::CurrentThread.GetApartmentState()
+Set-ExecutionPolicy Unrestricted -Scope Process
+#[System.Threading.Thread]::CurrentThread.GetApartmentState() #debug line
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName Microsoft.VisualBasic
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $Form                              = New-Object system.Windows.Forms.Form
@@ -116,12 +118,6 @@ $ZoomBox.Font                      = New-Object System.Drawing.Font('Microsoft S
 #$CommandLine.location              = New-Object System.Drawing.Point(50,550)
 #$CommandLine.Font                  = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
-#$ProgressBar1                      = New-Object system.Windows.Forms.ProgressBar
-#$ProgressBar1.width                = 750
-#$ProgressBar1.height               = 60
-#$ProgressBar1.location             = New-Object System.Drawing.Point(14,570)
-#$ProgressBar1.BackColor            = [System.Drawing.ColorTranslator]::FromHtml("#4a90e2")
-
 $EnterButton                       = New-Object system.Windows.Forms.Button
 $EnterButton.text                  = "Enter"
 $EnterButton.width                 = 200
@@ -157,6 +153,39 @@ $StopStartupButton.height          = 40
 $StopStartupButton.location        = New-Object System.Drawing.Point(125,450)
 $StopStartupButton.Font            = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
+$DevModeButton                     = New-Object system.Windows.Forms.Button
+$DevModeButton.text                = "Dev Mode"
+$DevModeButton.width               = 40
+$DevModeButton.height              = 40
+$DevModeButton.location            = New-Object System.Drawing.Point(245,450)
+$DevModeButton.Font                = New-Object System.Drawing.Font('Microsoft Sans Serif',8)
+
+$CommandList                       = New-Object system.Windows.Forms.ComboBox
+$CommandList.text                  = "Select a Command"
+$CommandList.width                 = 130
+$CommandList.height                = 20
+$CommandList.location              = New-Object System.Drawing.Point(290,450)
+$CommandList.BackColor             = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$CommandList.DropDownStyle         = 'DropDownList'
+$CommandList.Items.AddRange(       @('Add Program','Remove Program','Show List','PS Command'))
+$CommandList.SelectedIndex         = 0
+$CommandList.visible               = $false
+
+$SendCommandButton                 = New-Object system.Windows.Forms.Button
+$SendCommandButton.text            = "Send"
+$SendCommandButton.width           = 50
+$SendCommandButton.height          = 20
+$SendCommandButton.location        = New-Object System.Drawing.Point(420,450)
+$SendCommandButton.Font            = New-Object System.Drawing.Font('Microsoft Sans Serif',8)
+$SendCommandButton.visible         = $false
+
+$DevBox                            = New-Object System.Windows.Forms.TextBox
+$DevBox.height                     = 40
+$DevBox.width                      = 180
+$DevBox.location                   = New-Object System.Drawing.Point(290,470)
+$DevBox.BackColor                  = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$DevBox.visible                    = $false
+
 $AllButton                         = New-Object system.Windows.Forms.Button
 $AllButton.text                    = "All"
 $AllButton.width                   = 100
@@ -180,7 +209,23 @@ $WarningLabel.height               = 40
 $WarningLabel.location             = New-Object System.Drawing.Point(500,340)
 $WarningLabel.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 
-$Form.controls.AddRange(@($AudacityBox,$CCleanerBox,$ChromeBox,$FirefoxBox,$FoxitBox,$GreenshotBox,$MalwarebytesBox,$NotepadPlusPlusBox,$ReaderBox,$VLCBox,$ZoomBox,$EnterButton,$DefaultsButton,$NoneButton,$DeleteSetupButton,$StopStartupButton,$AllButton,$SelectProgramsLabel, $WarningLabel))
+$Logo                              = New-Object system.Windows.Forms.PictureBox
+$Logo.width                        = 400
+$Logo.height                       = 135
+$Logo.location                     = New-Object System.Drawing.Point(125,10)
+$Logo.imageLocation                = "TCGLogoSmall.png"
+
+$UpdateArea                        = New-Object System.Windows.Forms.TextBox
+$UpdateArea.height                 = 80
+$UpdateArea.width                  = 680
+$UpdateArea.Multiline              = $True;
+$UpdateArea.text                   = "Welcome to the TCG Auto-Installer!`r`n"
+$UpdateArea.location               = New-Object System.Drawing.Point(5,360)
+$UpdateArea.Scrollbars             = "Vertical" 
+$UpdateArea.BackColor              = [System.Drawing.ColorTranslator]::FromHtml("#ffffff")
+$UpdateArea.ReadOnly               = $true
+
+$Form.controls.AddRange(@($AudacityBox,$CCleanerBox,$ChromeBox,$FirefoxBox,$FoxitBox,$GreenshotBox,$MalwarebytesBox,$NotepadPlusPlusBox,$ReaderBox,$VLCBox,$ZoomBox,$EnterButton,$DefaultsButton,$NoneButton,$DeleteSetupButton,$StopStartupButton,$AllButton,$SelectProgramsLabel, $WarningLabel, $Logo, $UpdateArea, $DevModeButton, $CommandList, $SendCommandButton, $DevBox))
 
 $ProgramArray = New-Object System.Collections.ArrayList
 $BoxArray = New-Object System.Collections.ArrayList
@@ -188,9 +233,15 @@ $DefaultsArray = New-Object System.Collections.ArrayList
 $DefaultsArray = @('CCleaner','chrome','malwarebytes','reader')
 
 $BoxArray.AddRange(@($AudacityBox,$CCleanerBox,$ChromeBox,$FirefoxBox,$FoxitBox,$GreenshotBox,$MalwarebytesBox,$NotepadPlusPlusBox,$ReaderBox,$VLCBox,$ZoomBox))
+#URL List
 $URL = "https://ninite.com/"
-
+$CCleanerURL = "https://download.ccleaner.com/ccsetup569.exe"
+$ReaderURL = "ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/1500720033/AcroRdrDC1500720033_en_US.msi"
+$ReaderPatchURL ="ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920074/AcroRdrDCUpd2000920074.msp"
+$global:DevModeEnabled = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+
 
 function CheckAndDelete($file){
     if (Test-Path $file -PathType leaf) {
@@ -201,17 +252,8 @@ function stopStartup($file){
   if($File -eq "CCleaner"){
   Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run -Name 'CCleaner Smart Cleaning' -Value ([byte[]](0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00))
   Set-ItemProperty HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run -Name CCleaner -Value ([byte[]](0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00))
-  Write-Host "CCleaner autostartup has been disabled"
+[System.Windows.MessageBox]::Show('CCleaner autostartup has been disabled')
   }
-}
-
-function manualAdd($filename){
-$filename = Read-Host -Prompt 'Input your program with URL-friendly, lowercase text'
-return $filename
-}
-
-function programAdd($program){
-$ProgramArray.Add($program) > $null
 }
 
 function collectPrograms{
@@ -238,26 +280,28 @@ function collectPrograms{
     }
 }
 
-function downloadAll{
-  
-  Invoke-WebRequest https://ninite.com/audacity-chrome-firefox-foxit-greenshot-malwarebytes-notepadplusplus-vlc-zoom/ -OutFile Ninite.exe
-  Invoke-WebRequest http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe -OutFile ReaderInstaller.exe
-  Invoke-WebRequest https://download.ccleaner.com/ccsetup569.exe -OutFile ccsetup569.exe
-  Start-Process -FilePath Ninite.exe
-  Start-Process -FilePath ccsetup569.exe /S
-  cmd ReaderInstaller.exe /sAll
-
-  } 
 function downloadSelected{
   
   If ($ProgramArray -contains "reader") {
-  Start-BitsTransfer http://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920063/AcroRdrDC2000920063_en_US.exe, ReaderInstaller.exe
-  cmd ReaderInstaller.exe /sAll
+  $UpdateArea.AppendText("Downloading ReaderInstaller.msi`r`n")
+  $ProgressPreference = 'SilentlyContinue'
+  Invoke-WebRequest $ReaderURL -OutFile "ReaderInstaller.msi" -ErrorAction Stop
+  $UpdateArea.AppendText("Downloading ReaderPatch.msp`r`n")
+  Invoke-WebRequest $ReaderPatchURL -OutFile "ReaderPatch.msp" -ErrorAction Stop
+  $ProgressPreference = 'Continue'
+  $UpdateArea.AppendText("Running ReaderInstaller.exe`r`n")
+  msiexec /I ReaderInstaller.msi /qb
+  $UpdateArea.AppendText("Completed initial install`r`n")
+  msiexec /p ReaderPatch.msp /qb
+  $UpdateArea.AppendText("Completed patch install`r`n")
   $ProgramArray.Remove("reader")
   }
   If ($ProgramArray -contains "CCleaner") {
-  Start-BitsTransfer https://download.ccleaner.com/ccsetup569.exe, ccsetup569.exe
-  Start-Process -FilePath ccsetup569.exe /S
+  $UpdateArea.AppendText("Downloading ccsetup569.exe`r`n")
+  Invoke-WebRequest $CCleanerURL -OutFile $tempFolder\ccsetup569.exe -ErrorAction Stop
+  $UpdateArea.AppendText("Running ccsetup569.exe`r`n")
+  Start-Process -FilePath $tempFolder\ccsetup569.exe /S -ErrorAction Stop
+  $UpdateArea.AppendText("Completed`r`n")
   $ProgramArray.Remove("CCleaner")
   }
   If($ProgramArray.Count -gt 0){
@@ -267,9 +311,11 @@ function downloadSelected{
   }
   $URL = $URL.Substring(0,$URL.Length-1)  
   $URL = "https://ninite.com/" + $URL + "/ninite.exe"
-
-  Start-BitsTransfer $URL, Ninite.exe
-  Start-Process -FilePath Ninite.exe 
+  $UpdateArea.AppendText("Downloading Ninite.exe `r`n")
+  Invoke-WebRequest $URL -OutFile Ninite.exe -ErrorAction Stop
+  $UpdateArea.AppendText("Running Ninite.exe `r`n")
+  Start-Process -FilePath Ninite.exe -ErrorAction Stop
+  $UpdateArea.AppendText("Completed`r`n")
   } 
   ElseIf ($ProgramArray.Count -eq 0){
   #Does nothing instead of throwing an error
@@ -280,13 +326,14 @@ $AllClick = {
     foreach ($Checkbox in $BoxArray){
         $Checkbox.Checked = $true
     }
+    $UpdateArea.AppendText("All options selected`r`n")
 }
 $NoneClick = {
     foreach ($Checkbox in $BoxArray){
         $Checkbox.Checked = $false
     }
+        $UpdateArea.AppendText("All options unselected`r`n")
 }
-
 $DefaultsClick = {
     foreach ($Checkbox in $BoxArray){
         if($DefaultsArray.Contains($Checkbox.AccessibleName)){
@@ -295,22 +342,180 @@ $DefaultsClick = {
         else{
             $Checkbox.Checked = $false
         }
-    }   
+    }
+        $UpdateArea.AppendText("Default options selected`r`n")   
 }
-
 $EnterClick = {
     collectPrograms('selected')
     downloadSelected
 }
-
 $StopStartupClick = {
 stopStartup("CCleaner")
 }
+$DevModeClick = {
 
+    if($global:DevModeEnabled -eq $false){
+
+    $UpdateArea.AppendText("Dev Mode Enabled`r`n")
+    $DevBox.visible = $true
+    $SendCommandButton.visible = $true
+    $CommandList.visible = $true
+    $global:DevModeEnabled = $true
+
+    }
+
+    else{
+
+    $UpdateArea.AppendText("Dev Mode Disabled`r`n")
+    $DevBox.visible = $false
+    $SendCommandButton.visible = $false
+    $CommandList.visible = $false
+    $global:DevModeEnabled = $false
+
+    }
+
+}
+$SendCommandClick = {
+
+switch ($CommandList.Text) {
+
+    'Add Program' {
+    
+        if($DevBox.Text.Length -gt 2){
+            $ProgramArray.Add($DevBox.Text.Trim(" "))
+            $UpdateArea.AppendText($DevBox.Text + " added`r`n")
+        }
+        else{
+        
+            $UpdateArea.AppendText("Please enter a valid program`r`n")
+        
+        }
+    }
+
+    'Remove Program' {
+    
+        if($DevBox.Text.Length -gt 2){
+            $ProgramArray.Remove($DevBox.Text)
+            $UpdateArea.AppendText($DevBox.Text + " removed`r`n")
+        }
+        else{
+
+            $UpdateArea.AppendText("Please enter a valid program`r`n")
+        
+        }
+    }
+
+    'Show List' {
+    
+    $ProgramArray.Sort()
+    foreach($Program in $ProgramArray){
+        $Program.ToLower()
+    }
+    $UpdateArea.AppendText($ProgramArray + "`r`n")
+    }
+    
+    'PS Command' {
+    
+    Invoke-Expression $DevBox.Text
+    
+    }  
+}
+}
 $DeleteSetupClick = {
-#will be updated at a later time
-[System.Windows.MessageBox]::Show('Test')
+  CheckAndDelete("Ninite.exe")
+  CheckAndDelete("ccsetup569.exe")
+  CheckAndDelete("ReaderInstaller.msi")
+  CheckAndDelete("ReaderPatch.msp")
+[System.Windows.MessageBox]::Show('Files Deleted')
 
+}
+$AudacityClick = {
+    if($AudacityBox.Checked){
+        $UpdateArea.AppendText("Audacity selected`r`n")
+    } 
+    else{
+        $UpdateArea.AppendText("Audacity unselected`r`n")
+    }
+}
+$CCleanerClick = {
+    if($AudacityBox.Checked){
+        $UpdateArea.AppendText("CCleaner selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("CCleaner unselected`r`n")
+    }
+}
+$ChromeClick = {
+    if($ChromeBox.Checked){
+        $UpdateArea.AppendText("Chrome selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Chrome unselected`r`n")
+    }
+}
+$FirefoxClick = {
+    if($FirefoxBox.Checked){
+        $UpdateArea.AppendText("Firefox selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Firefox unselected`r`n")
+    }
+}
+$FoxitClick = {
+    if($FoxitBox.Checked){
+        $UpdateArea.AppendText("Foxit selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Foxit unselected`r`n")
+    }
+}
+$GreenshotClick = {
+    if($GreenshotBox.Checked){
+    $UpdateArea.AppendText("Greenshot selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Greenshot unselected`r`n")
+    }
+}
+$MalwarebytesClick = {
+    if($MalwarebytesBox.Checked){
+        $UpdateArea.AppendText("Malwarebytes selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Malwarebytes unselected`r`n")
+    }
+}
+$NotepadPlusPlusClick = {
+    if($NotepadPlusPlusBox.Checked){
+        $UpdateArea.AppendText("Notepad++ selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Notepad++ unselected`r`n")
+    }
+}
+$ReaderClick = {
+    if($ReaderBox.Checked){
+        $UpdateArea.AppendText("Reader selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Reader unselected`r`n")
+    }
+}
+$VLCClick = {
+    if($VLCBox.Checked){
+        $UpdateArea.AppendText("VLC selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("VLC unselected`r`n")
+    }
+}
+$ZoomClick = {
+    if($ZoomBox.Checked){
+        $UpdateArea.AppendText("Zoom selected`r`n")
+    }
+    else{
+        $UpdateArea.AppendText("Zoom unselected`r`n")
+    }
 }
 #Buttons
 $AllButton.Add_Click($AllClick)
@@ -319,6 +524,8 @@ $DefaultsButton.Add_Click($DefaultsClick)
 $DeleteSetupButton.Add_Click($DeleteSetupClick)
 $StopStartupButton.Add_Click($StopStartupClick)
 $EnterButton.Add_Click($EnterClick)
+$SendCommandButton.Add_Click($SendCommandClick)
+$DevModeButton.Add_Click($DevModeClick)
 #Checkboxes
 $AudacityBox.Add_Click($AudacityClick)
 $CCleanerBox.Add_Click($CCleanerClick)
