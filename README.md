@@ -4,11 +4,7 @@
 
 This is a project attempting to automate the setup of new computers for clients. 
 
-Currently, AllowScripts.exe must be run first to allow the PowerShell scripts to run successfully.
-
-* GUI-Installer.ps1 *may* not need AllowScripts.exe to be run anymore, but this will need more testing.
-
-*UPDATE: It's no longer recommended to use InstallWithPrompts.ps1 with the advent of GUI-Installer.ps1*
+*UPDATE: GUI-Installer now is available in both .exe and .ps1 formats! They both come bundled when downloading the most recent release."
 
 GUI-Installer will provide the user with some options for what they want to download to the new computer. 
 
