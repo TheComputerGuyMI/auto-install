@@ -8,7 +8,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 
 $Form                              = New-Object system.Windows.Forms.Form
 $Form.ClientSize                   = New-Object System.Drawing.Point(700,500)
-$Form.text                         = "TCG Auto-Installer"
+$Form.text                         = "TCG Auto-Installer | RUN WITH ADMIN PRIVILEGES"
 $Form.TopMost                      = $false
 $Form.StartPosition                ='CenterScreen'
 
@@ -235,9 +235,9 @@ $DefaultsArray = @('CCleaner','chrome','malwarebytes','reader')
 $BoxArray.AddRange(@($AudacityBox,$CCleanerBox,$ChromeBox,$FirefoxBox,$FoxitBox,$GreenshotBox,$MalwarebytesBox,$NotepadPlusPlusBox,$ReaderBox,$VLCBox,$ZoomBox))
 #URL List
 $URL = "https://ninite.com/"
-$CCleanerURL = "https://download.ccleaner.com/ccsetup569.exe"
+$CCleanerURL = "https://download.ccleaner.com/ccsetup579.exe"
 $ReaderURL = "ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/1500720033/AcroRdrDC1500720033_en_US.msi"
-$ReaderPatchURL ="ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2000920074/AcroRdrDCUpd2000920074.msp"
+$ReaderPatchURL ="ftp://ftp.adobe.com/pub/adobe/reader/win/AcrobatDC/2100120155/AcroRdrDCUpd2100120155.msp"
 $global:DevModeEnabled = $false
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -297,10 +297,10 @@ function downloadSelected{
   $ProgramArray.Remove("reader")
   }
   If ($ProgramArray -contains "CCleaner") {
-  $UpdateArea.AppendText("Downloading ccsetup569.exe`r`n")
-  Invoke-WebRequest $CCleanerURL -OutFile $tempFolder\ccsetup569.exe -ErrorAction Stop
-  $UpdateArea.AppendText("Running ccsetup569.exe`r`n")
-  Start-Process -FilePath $tempFolder\ccsetup569.exe /S -ErrorAction Stop
+  $UpdateArea.AppendText("Downloading ccsetup579.exe`r`n")
+  Invoke-WebRequest $CCleanerURL -OutFile $tempFolder\ccsetup579.exe -ErrorAction Stop
+  $UpdateArea.AppendText("Running ccsetup579.exe`r`n")
+  Start-Process -FilePath $tempFolder\ccsetup579.exe /S -ErrorAction Stop
   $UpdateArea.AppendText("Completed`r`n")
   $ProgramArray.Remove("CCleaner")
   }
@@ -423,7 +423,7 @@ switch ($CommandList.Text) {
 }
 $DeleteSetupClick = {
   CheckAndDelete("Ninite.exe")
-  CheckAndDelete("ccsetup569.exe")
+  CheckAndDelete("ccsetup579.exe")
   CheckAndDelete("ReaderInstaller.msi")
   CheckAndDelete("ReaderPatch.msp")
 [System.Windows.MessageBox]::Show('Files Deleted')
